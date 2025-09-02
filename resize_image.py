@@ -30,8 +30,8 @@ def resize_image(input_path, output_path=None, target_size=(1024, 1024)):
 		print(f"Original image size: {original_size[0]} x {original_size[1]}")
 
 		# Check if image is 2048x2048 (optional warning)
-		if original_size != (2048, 2048):
-			print("Warning: Input image is not 2048x2048. Proceeding with resize...")
+		# if original_size != (2048, 2048):
+		# 	print("Warning: Input image is not 2048x2048. Proceeding with resize...")
 
 		# Resize the image using LANCZOS resampling for high quality
 		resized_img = img.resize(target_size, Image.Resampling.LANCZOS)
@@ -58,7 +58,7 @@ def resize_image(input_path, output_path=None, target_size=(1024, 1024)):
 		return False
 
 # Alternative: Batch processing function for multiple images
-def batch_resize(input_folder, output_folder=None, extensions=('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+def batch_resize(input_folder, output_folder=None, extensions=('.png', '.jpg', '.jpeg', '.bmp', '.gif'), target_size=(1024, 1024) ):
 	"""
 	Resize all images in a folder from 2048x2048 to 1024x1024
 
@@ -81,13 +81,21 @@ def batch_resize(input_folder, output_folder=None, extensions=('.png', '.jpg', '
 			output_path = os.path.join(output_folder, filename)
 
 			print(f"\nProcessing: {filename}")
-			if resize_image(input_path, output_path):
+			if resize_image(input_path, output_path, target_size):
 				processed += 1
 
 	print(f"\n{'='*50}")
 	print(f"Batch processing complete! Processed {processed} images.")
 	print(f"Output folder: {output_folder}")
 	return True
+
+def HelpInfo():
+	print("Usage: python resize_image.py <input_image> [output_image]")
+	print("Example: python resize_image.py image_2048.png image_1024.png")
+	print("Flags: -f (folders of folders of images), -t (target size)")
+	print("-f <folder_path>: Path to folder of folders containing images to resize")
+	print("-t <width> <height>: Target size for resizing")
+	print("Help: python resize_image.py -h")
 
 def main():
 	"""
@@ -99,18 +107,18 @@ def main():
 	"""
 	extensions=('.png', '.jpg', '.jpeg', '.bmp', '.gif')
 	flag = ""
+	target_size = (1024, 1024)
 	# Check command line arguments
 
 	if len(sys.argv) < 2:
-		print("Usage: python resize_image.py <input_image> [output_image]")
-		print("Example: python resize_image.py image_2048.png image_1024.png")
+		HelpInfo()
 		sys.exit(1)
 	elif sys.argv[1] == "-h":
-		print("Usage: python resize_image.py <input_image> [output_image]")
-		print("Example: python resize_image.py image_2048.png image_1024.png")
-		print("Flags: -f to process a folder of folders of images")
-		print("Help: python resize_image.py -h")
+		HelpInfo()
 		sys.exit(1)
+
+	if "-t" in sys.argv:
+		target_size = (int(sys.argv[sys.argv.index("-t") + 1]), int(sys.argv[sys.argv.index("-t") + 2]))
 
 	if len(sys.argv) == 3:
 		flag = sys.argv[1]
@@ -124,7 +132,7 @@ def main():
 	success = False
 
 	if input_file.split('.')[-1] in ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'tiff']:
-		success = resize_image(input_file, output_file)
+		success = resize_image(input_file, output_file, target_size)
 	elif flag == '-f':
 		folders = os.listdir(input_file)
 		for f in folders:
@@ -136,9 +144,9 @@ def main():
 					move(os.path.join(input_file, f, file), os.path.join(input_file, f,"2K", file))
 				if file.endswith((".usda", ".usdc", ".usdz")):
 					move(os.path.join(input_file, f, file), os.path.join(input_file, f,"USD", file))
-			success = batch_resize(os.path.join(input_file, f, "2K"), os.path.join(input_file, f, "1k"))
+			success = batch_resize(os.path.join(input_file, f, "2K"), os.path.join(input_file, f, "1k"), target_size)
 	elif len(os.listdir(input_file)) > 0:
-		success = batch_resize(input_file, output_file)
+		success = batch_resize(input_file, output_file, target_size)
 	else:
 		print(f"Error: '{input_file}' is not a valid image file")
 		success = False
