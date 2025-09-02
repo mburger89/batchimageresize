@@ -1,3 +1,7 @@
+___this script has changed quite a bit since the last update, now it supports resizing images of any size to any target size.___
+
+___please refer to the help command in the script for more information___
+
 # Image Resizer Script - 2048 to 1024 Converter
 
 A Python script that efficiently resizes 2048x2048 images to 1024x1024 while maintaining high quality.
