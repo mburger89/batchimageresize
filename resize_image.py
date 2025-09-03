@@ -29,10 +29,6 @@ def resize_image(input_path, output_path=None, target_size=(1024, 1024)):
 		original_size = img.size
 		print(f"Original image size: {original_size[0]} x {original_size[1]}")
 
-		# Check if image is 2048x2048 (optional warning)
-		# if original_size != (2048, 2048):
-		# 	print("Warning: Input image is not 2048x2048. Proceeding with resize...")
-
 		# Resize the image using LANCZOS resampling for high quality
 		resized_img = img.resize(target_size, Image.Resampling.LANCZOS)
 
@@ -58,7 +54,7 @@ def resize_image(input_path, output_path=None, target_size=(1024, 1024)):
 		return False
 
 # Alternative: Batch processing function for multiple images
-def batch_resize(input_folder, output_folder=None, extensions=('.png', '.jpg', '.jpeg', '.bmp', '.gif'), target_size=(1024, 1024) ):
+def batch_resize(input_folder, output_folder=None, target_size=(1024, 1024) ):
 	"""
 	Resize all images in a folder from 2048x2048 to 1024x1024
 
@@ -68,7 +64,7 @@ def batch_resize(input_folder, output_folder=None, extensions=('.png', '.jpg', '
 		extensions (tuple): Tuple of valid image extensions
 	"""
 	if output_folder is None:
-		output_folder = os.path.join(input_folder, "resized_1024")
+		output_folder = os.path.join(input_folder, "resized")
 
 	# Create output folder if it doesn't exist
 	os.makedirs(output_folder, exist_ok=True)
@@ -76,7 +72,8 @@ def batch_resize(input_folder, output_folder=None, extensions=('.png', '.jpg', '
 	# Process all images in the folder
 	processed = 0
 	for filename in os.listdir(input_folder):
-		if filename.lower().endswith(extensions):
+		print(filename)
+		if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
 			input_path = os.path.join(input_folder, filename)
 			output_path = os.path.join(output_folder, filename)
 
@@ -105,7 +102,7 @@ def main():
 		output_folder (str): Path to output folder (creates if doesn't exist)
 		flags (str): Flags for additional processing (-f to process a folder of folders of images)
 	"""
-	extensions=('.png', '.jpg', '.jpeg', '.bmp', '.gif')
+	extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
 	flag = ""
 	target_size = (1024, 1024)
 	# Check command line arguments
