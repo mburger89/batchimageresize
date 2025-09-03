@@ -89,9 +89,9 @@ def batch_resize(input_folder, output_folder=None, target_size=(1024, 1024) ):
 def HelpInfo():
 	print("Usage: python resize_image.py <input_image> [output_image]")
 	print("Example: python resize_image.py image_2048.png image_1024.png")
-	print("Flags: -f (folders of folders of images), -t (target size)")
-	print("-f <folder_path>: Path to folder of folders containing images to resize")
-	print("-t <width> <height>: Target size for resizing")
+	print("Flags:")
+	print("  -f <folder_path>: Path to folder of folders containing images to resize")
+	print("  -t <width> <height>: Target size for resizing")
 	print("Help: python resize_image.py -h")
 
 def main():
@@ -127,25 +127,30 @@ def main():
 
 	# Perform the resize
 	success = False
-
+	# if its only one file resize it
 	if input_file.split('.')[-1] in ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'tiff']:
 		success = resize_image(input_file, output_file, target_size)
+	# if the flag is set read the files in the folders and resize them
 	elif flag == '-f':
 		folders = os.listdir(input_file)
 		for f in folders:
+			# create folders for each version and file type
 			os.makedirs(os.path.join(input_file, f,"USD"), exist_ok=True)
-			os.makedirs(os.path.join(input_file, f,"2K"), exist_ok=True)
+			os.makedirs(os.path.join(input_file, f,"Original"), exist_ok=True)
 			os.makedirs(os.path.join(input_file, f,"1k"), exist_ok=True)
+			# move files to each version folder
 			for file in os.listdir(os.path.join(input_file, f)):
 				if file.endswith(extensions):
-					move(os.path.join(input_file, f, file), os.path.join(input_file, f,"2K", file))
+					move(os.path.join(input_file, f, file), os.path.join(input_file, f,"Original", file))
 				if file.endswith((".usda", ".usdc", ".usdz")):
 					move(os.path.join(input_file, f, file), os.path.join(input_file, f,"USD", file))
-			success = batch_resize(os.path.join(input_file, f, "2K"), os.path.join(input_file, f, "1k"), target_size)
+			# resize images in the Original folder and write them to the 1k folder
+			success = batch_resize(os.path.join(input_file, f, "Original"), os.path.join(input_file, f, "1k"), target_size)
+	# otherwise if its a folder resize the image inside
 	elif len(os.listdir(input_file)) > 0:
 		success = batch_resize(input_file, output_file, target_size)
 	else:
-		print(f"Error: '{input_file}' is not a valid image file")
+		print(f"Error: '{input_file}' is not a valid image file or folder structure")
 		success = False
 
 	if not success:
