@@ -65,10 +65,8 @@ def batch_resize(input_folder, output_folder=None, target_size=(1024, 1024) ):
 	"""
 	if output_folder is None:
 		output_folder = os.path.join(input_folder, "resized")
-
 	# Create output folder if it doesn't exist
 	os.makedirs(output_folder, exist_ok=True)
-
 	# Process all images in the folder
 	processed = 0
 	for filename in os.listdir(input_folder):
@@ -104,9 +102,9 @@ def main():
 	"""
 	extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
 	flag = ""
+	mvOGPath = ""
 	target_size = (1024, 1024)
 	# Check command line arguments
-
 	if len(sys.argv) < 2:
 		HelpInfo()
 		sys.exit(1)
@@ -116,6 +114,9 @@ def main():
 
 	if "-t" in sys.argv:
 		target_size = (int(sys.argv[sys.argv.index("-t") + 1]), int(sys.argv[sys.argv.index("-t") + 2]))
+
+	if '-p' in sys.argv:
+		mvOGPath = sys.argv[sys.argv.index('-p') + 1]
 
 	if len(sys.argv) == 3:
 		flag = sys.argv[1]
@@ -136,17 +137,25 @@ def main():
 		for f in folders:
 			# create folders for each version and file type
 			os.makedirs(os.path.join(input_file, f,"USD"), exist_ok=True)
-			os.makedirs(os.path.join(input_file, f,"Original"), exist_ok=True)
+			os.makedirs(os.path.join(input_file, f,f"Original_{f}"), exist_ok=True)
 			os.makedirs(os.path.join(input_file, f,"1k"), exist_ok=True)
 			# move files to each version folder
 			for file in os.listdir(os.path.join(input_file, f)):
 				if file.endswith(extensions):
-					move(os.path.join(input_file, f, file), os.path.join(input_file, f,"Original", file))
+					move(os.path.join(input_file, f, file), os.path.join(input_file, f,f"Original_{f}", file))
 				if file.endswith((".usda", ".usdc", ".usdz")):
 					move(os.path.join(input_file, f, file), os.path.join(input_file, f,"USD", file))
 			# resize images in the Original folder and write them to the 1k folder
-			success = batch_resize(os.path.join(input_file, f, "Original"), os.path.join(input_file, f, "1k"), target_size)
-	# otherwise if its a folder resize the image inside
+			success = batch_resize(os.path.join(input_file, f, f"Original_{f}"), os.path.join(input_file, f, "1k"), target_size)
+	elif flag == '-rcp':
+		folders = os.listdir(input_file)
+		for f in folders:
+			os.makedirs(os.path.join(input_file, f,f"original_{f}"), exist_ok=True)
+			for file in os.listdir(os.path.join(input_file, f)):
+				if file.endswith(extensions):
+					move(os.path.join(input_file, f, file), os.path.join(input_file, f,f"original_{f}", file))
+			success = batch_resize(os.path.join(input_file, f, f"original_{f}"), os.path.join(input_file, f), target_size)
+			move(os.path.join(input_file, f, f"original_{f}"), mvOGPath)
 	elif len(os.listdir(input_file)) > 0:
 		success = batch_resize(input_file, output_file, target_size)
 	else:
@@ -155,7 +164,6 @@ def main():
 
 	if not success:
 		sys.exit(1)
-
 
 if __name__ == "__main__":
 	main()
